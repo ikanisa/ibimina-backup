@@ -1,0 +1,53 @@
+version: "3.9"
+
+x-postgres-common: &postgres-common
+  image: supabase/postgres:15.1.1.71
+  environment:
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_DB: ${IBIMINA_DB_NAME:-ibimina_dev}
+  healthcheck:
+    test: ["CMD", "pg_isready", "-U", "postgres"]
+    interval: 5s
+    timeout: 5s
+    retries: 10
+  restart: unless-stopped
+
+services:
+  postgres:
+    <<: *postgres-common
+    container_name: ibimina-postgres-dev
+    ports:
+      - "${IBIMINA_DB_PORT:-6543}:5432"
+    volumes:
+      - ibimina-postgres-data:/var/lib/postgresql/data
+
+  staff-admin:
+    build:
+      context: .
+      target: runner
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+        OPENAI_API_KEY: ${OPENAI_API_KEY}
+        OPENAI_RESPONSES_MODEL: ${OPENAI_RESPONSES_MODEL}
+        SITE_URL: ${SITE_URL:-http://localhost:3100}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3100}
+        NEXT_PUBLIC_BUILD_ID: ${NEXT_PUBLIC_BUILD_ID:-docker-compose}
+        SENTRY_DSN: ${SENTRY_DSN}
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN}
+        SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE}
+        SENTRY_PROFILES_SAMPLE_RATE: ${SENTRY_PROFILES_SAMPLE_RATE}
+    env_file:
+      - .env
+    environment:
+      PORT: 3100
+    ports:
+      - "3100:3100"
+    depends_on:
+      - postgres
+
+volumes:
+  ibimina-postgres-data:
+    driver: local

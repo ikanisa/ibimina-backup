@@ -1,0 +1,63 @@
+project_id = "vacltfdslodqybxojytc"
+
+[api]
+schemas = ["public", "storage", "graphql_public", "app", "app_helpers"]
+extra_search_path = ["public", "extensions", "app", "app_helpers"]
+
+[auth]
+site_url = "http://localhost:3100"
+additional_redirect_urls = []
+
+[functions.parse-sms]
+verify_jwt = true
+
+[functions.ingest-sms]
+verify_jwt = true
+
+[functions.sms-inbox]
+verify_jwt = true
+
+[functions.sms-ai-parse]
+verify_jwt = true
+
+[functions.payments-apply]
+verify_jwt = true
+
+[functions.recon-exceptions]
+verify_jwt = true
+
+[functions.reports-export]
+verify_jwt = true
+
+[functions.admin-reset-mfa]
+verify_jwt = true
+
+[functions.invite-user]
+verify_jwt = true
+
+[functions.import-statement]
+verify_jwt = true
+
+[functions.secure-import-members]
+verify_jwt = true
+
+[functions.settle-payment]
+verify_jwt = true
+
+[functions.sms-review]
+verify_jwt = true
+
+[functions.scheduled-reconciliation]
+verify_jwt = true
+
+[functions.metrics-exporter]
+verify_jwt = true
+
+[functions.metrics-anomaly-detector]
+verify_jwt = true
+
+[functions.generate-mfa-code]
+verify_jwt = false
+
+[functions.debug-auth-users]
+verify_jwt = false
