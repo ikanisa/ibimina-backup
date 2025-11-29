@@ -1,9 +1,7 @@
 packages:
-  - apps/pwa/*
-  - apps/mobile/*
-  - apps/desktop/*
-  - apps/website
-  - packages/*
+  - "apps/desktop/staff-admin"
+  - "apps/pwa/staff-admin"
+  - "packages/*"
 
 ignoredBuiltDependencies:
   - "@tailwindcss/oxide"
