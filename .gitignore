@@ -1,0 +1,71 @@
+# Dependencies
+/node_modules
+**/node_modules/
+
+# Next.js build output
+**/.next/
+**/out/
+**/build/
+!scripts/build/
+!scripts/build/**
+**/public/service-worker.js
+**/public/workbox-*.js
+
+# Misc
+.DS_Store
+*.pem
+
+# Logs
+default.profraw
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.logs/
+
+# Environment
+.env*
+!.env.example
+!.env.production.example
+!.env.cloudflare.template
+!apps/*/.env.example
+!apps/*/.env.cloudflare.template
+
+# TypeScript
+*.tsbuildinfo
+/next-env.d.ts
+**/dist/
+
+# Supabase local metadata
+supabase/.temp
+
+# Reports
+/.reports/
+
+# Coverage artifacts
+**/coverage/
+!scripts/coverage/
+**/.nyc_output/
+
+# Playwright artifacts
+test-results/
+
+# Android keystore (never commit)
+/apps/client/android/app/*.keystore
+/apps/client/android/app/*.jks
+/apps/client/android/keystore.properties
+/apps/client/credentials/*.json
+
+# Fastlane build output
+/apps/client/fastlane/report.xml
+/apps/client/fastlane/Preview.html
+
+# Vercel local artifacts (Cloudflare adapter output)
+apps/admin/.vercel/
+apps/client/.vercel/
+apps/staff-admin-pwa/.vercel/
+apps/website/.vercel/
+
+# APK distribution directory
+/dist/
+.env.local

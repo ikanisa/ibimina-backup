@@ -1,0 +1,70 @@
+name: Node Quick Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      CI: "true"
+      HUSKY: "0"
+      # Required environment variables for Next.js build
+      NEXT_PUBLIC_SUPABASE_URL: "https://placeholder.supabase.co"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "placeholder-anon-key"
+      SUPABASE_SERVICE_ROLE_KEY: "placeholder-service-role-key"
+      BACKUP_PEPPER: "placeholder-backup-pepper-32-bytes-min"
+      MFA_SESSION_SECRET: "placeholder-mfa-session-secret-32b"
+      TRUSTED_COOKIE_SECRET: "placeholder-trusted-cookie-secret"
+      HMAC_SHARED_SECRET: "placeholder-hmac-shared-secret-32"
+      OPENAI_API_KEY: "placeholder-openai-api-key"
+      KMS_DATA_KEY_BASE64: "c3R1Yi1rbXMtZGF0YS1rZXktMzItYnl0ZXMtISEhIQ=="
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.19.0
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: "pnpm"
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (excluding client)
+        run: pnpm -r --filter '!@ibimina/client' lint
+
+      - name: Lint client package
+        id: client_lint
+        run: pnpm --filter @ibimina/client lint
+        continue-on-error: true
+
+      - name: Enforce client lint tracking policy
+        if: steps.client_lint.outcome == 'failure'
+        run: node scripts/verify-client-lint-tracking.mjs
+
+      - name: Report client lint allowance
+        if: steps.client_lint.outcome == 'failure'
+        run: echo "::warning::@ibimina/client lint failed but is temporarily allowed because issues are tracked."
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Build shared packages
+        run: pnpm run build:packages
+
+      - name: Build applications
+        run: pnpm run build:apps
