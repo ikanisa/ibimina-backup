@@ -3,14 +3,14 @@ import type {
   PlatformInfo,
   PlatformFeature,
   UpdateInfo,
-} from '@ibimina/admin-core/adapters';
-import { TauriStorage } from './tauri-storage';
-import { TauriNotifications } from './tauri-notifications';
-import { TauriPrint } from './tauri-print';
-import { TauriHardware } from './tauri-hardware';
-import { invoke } from '@tauri-apps/api/core';
-import { open } from '@tauri-apps/plugin-shell';
-import { platform, version } from '@tauri-apps/plugin-os';
+} from "@ibimina/admin-core/adapters";
+import { TauriStorage } from "./tauri-storage";
+import { TauriNotifications } from "./tauri-notifications";
+import { TauriPrint } from "./tauri-print";
+import { TauriHardware } from "./tauri-hardware";
+import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-shell";
+import { platform, version } from "@tauri-apps/plugin-os";
 
 export class TauriAdapter implements PlatformAdapter {
   public info: PlatformInfo;
@@ -24,7 +24,7 @@ export class TauriAdapter implements PlatformAdapter {
     const osVersion = version();
 
     this.info = {
-      type: 'desktop',
+      type: "desktop",
       os: this.mapPlatformToOS(platformType),
       version: osVersion,
       isOnline: navigator.onLine,
@@ -38,25 +38,25 @@ export class TauriAdapter implements PlatformAdapter {
 
   async initialize(): Promise<void> {
     // Initialize platform-specific features
-    window.addEventListener('online', () => {
+    window.addEventListener("online", () => {
       this.info.isOnline = true;
     });
-    window.addEventListener('offline', () => {
+    window.addEventListener("offline", () => {
       this.info.isOnline = false;
     });
   }
 
   isFeatureAvailable(feature: PlatformFeature): boolean {
     const features: Record<PlatformFeature, boolean> = {
-      'offline-storage': true,
-      'push-notifications': true,
-      'biometrics': false, // Desktop doesn't typically have biometrics
+      "offline-storage": true,
+      "push-notifications": true,
+      biometrics: false, // Desktop doesn't typically have biometrics
       nfc: false, // Desktop doesn't have NFC
-      'barcode-scanner': true, // Via USB scanners or webcam
+      "barcode-scanner": true, // Via USB scanners or webcam
       printing: true,
-      'auto-update': true,
-      'system-tray': true,
-      'deep-linking': true,
+      "auto-update": true,
+      "system-tray": true,
+      "deep-linking": true,
     };
     return features[feature] ?? false;
   }
@@ -65,35 +65,39 @@ export class TauriAdapter implements PlatformAdapter {
     await open(url);
   }
 
-  getAppVersion(): string {
-    return '0.1.0'; // TODO: Get from package.json or Tauri config
+  async getAppVersion(): Promise<string> {
+    try {
+      const { tauriCommands } = await import("@/lib/tauri/commands");
+      return await tauriCommands.updates.getCurrentVersion();
+    } catch (error) {
+      console.error("Failed to get app version:", error);
+      return "0.1.0";
+    }
   }
 
   async checkForUpdates(): Promise<UpdateInfo | null> {
     try {
-      return await invoke<UpdateInfo | null>('check_for_updates');
+      return await invoke<UpdateInfo | null>("check_for_updates");
     } catch (error) {
-      console.error('Failed to check for updates:', error);
+      console.error("Failed to check for updates:", error);
       return null;
     }
   }
 
   async installUpdate(): Promise<void> {
-    await invoke('install_update');
+    await invoke("install_update");
   }
 
-  private mapPlatformToOS(
-    platformType: string,
-  ): 'windows' | 'macos' | 'linux' | 'web' {
+  private mapPlatformToOS(platformType: string): "windows" | "macos" | "linux" | "web" {
     switch (platformType) {
-      case 'windows':
-        return 'windows';
-      case 'macos':
-        return 'macos';
-      case 'linux':
-        return 'linux';
+      case "windows":
+        return "windows";
+      case "macos":
+        return "macos";
+      case "linux":
+        return "linux";
       default:
-        return 'web';
+        return "web";
     }
   }
 }

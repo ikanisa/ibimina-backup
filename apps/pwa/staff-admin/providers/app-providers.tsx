@@ -12,6 +12,7 @@ import { SupabaseAuthListener } from "@/providers/supabase-auth-listener";
 import { DEFAULT_LOCALE, type SupportedLocale } from "@/lib/i18n/locales";
 import { Analytics } from "@/src/lib/analytics";
 import { AtlasAssistantProvider } from "@/providers/atlas-assistant-provider";
+import { UpdaterListener } from "@/components/system/updater-listener";
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -38,6 +39,7 @@ export function AppProviders({
                     <AtlasAssistantProvider>
                       <Analytics />
                       <SupabaseAuthListener />
+                      <UpdaterListener />
                       {children}
                     </AtlasAssistantProvider>
                   </MotionProvider>

@@ -1,27 +1,37 @@
-import React from 'react';
+import React from "react";
 
 // Stub hook for desktop tokens
-function useDesktopTokens(theme: string) {
-  return {};
-}
+// function useDesktopTokens(theme: string) {
+//   return {};
+// }
 
 interface WindowControlProps {
-  color: 'red' | 'yellow' | 'green';
-  action: 'close' | 'minimize' | 'maximize';
+  color: "red" | "yellow" | "green";
+  action: "close" | "minimize" | "maximize";
 }
 
 function WindowControl({ color, action }: WindowControlProps) {
-  const tokens = useDesktopTokens('light');
-  
   const colors = {
-    red: '#ff5f57',
-    yellow: '#febc2e',
-    green: '#28c840',
+    red: "#ff5f57",
+    yellow: "#febc2e",
+    green: "#28c840",
   };
 
-  const handleClick = () => {
-    // Tauri window controls would go here
-    console.log(`Window action: ${action}`);
+  const handleClick = async () => {
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    const appWindow = getCurrentWindow();
+
+    switch (action) {
+      case "close":
+        appWindow.close();
+        break;
+      case "minimize":
+        appWindow.minimize();
+        break;
+      case "maximize":
+        appWindow.toggleMaximize();
+        break;
+    }
   };
 
   return (
@@ -55,7 +65,7 @@ function UserMenu() {
 
 export function TitleBar() {
   return (
-    <div 
+    <div
       className="h-9 flex items-center justify-between px-4 bg-surface-base border-b border-border-default select-none"
       data-tauri-drag-region
     >
@@ -69,9 +79,7 @@ export function TitleBar() {
       {/* App Title */}
       <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
         <img src="/icon.svg" alt="" className="w-4 h-4" />
-        <span className="text-sm font-medium text-text-secondary">
-          SACCO+ Staff Admin
-        </span>
+        <span className="text-sm font-medium text-text-secondary">SACCO+ Staff Admin</span>
       </div>
 
       {/* Right Actions */}

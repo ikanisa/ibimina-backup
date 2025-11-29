@@ -2,8 +2,9 @@
  * Login page for desktop app
  */
 
-import { useState, FormEvent } from "react";
-import { useAuth } from "@/lib/auth-context";
+import { useState, FormEvent, useEffect } from "react";
+import { useAuth } from "@/lib/auth/context";
+import { useRouter } from "next/navigation";
 import { AlertCircle, Loader2, Lock, Mail } from "lucide-react";
 
 export default function LoginPage() {
@@ -11,7 +12,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push("/dashboard");
+    }
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,6 +35,20 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  // Show loading while checking auth state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  // Don't render if already logged in
+  if (user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">

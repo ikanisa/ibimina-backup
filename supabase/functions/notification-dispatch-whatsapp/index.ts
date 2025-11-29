@@ -52,8 +52,8 @@ const fetchPayment = async (
 };
 
 const sendWhatsapp = async ({ to, body }: { to: string; body: string }) => {
-  const accessToken = requireEnv("META_WHATSAPP_ACCESS_TOKEN");
-  const phoneNumberId = requireEnv("META_WHATSAPP_PHONE_NUMBER_ID");
+  const accessToken = requireEnv("META_WABA_TOKEN");
+  const phoneNumberId = requireEnv("META_WABA_PHONE_ID");
 
   // Meta WhatsApp Business API endpoint
   const apiUrl = `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`;

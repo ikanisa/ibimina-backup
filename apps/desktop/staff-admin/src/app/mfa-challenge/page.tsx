@@ -1,50 +1,51 @@
 "use client";
 
 /**
- * MFA Challenge page for desktop app
+ * MFA Challenge page for two-factor authentication
  */
 
 import { useState, FormEvent, useEffect } from "react";
+import { useAuth } from "@/lib/auth/context";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { AlertCircle, Loader2, Shield, ArrowLeft } from "lucide-react";
 
-export default function MFAChallengePagePage() {
+export default function MfaChallengePage() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { user, profile, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const router = useRouter();
 
+  // Redirect if not logged in
   useEffect(() => {
-    // Redirect if not logged in or MFA not required
-    if (!user || !profile?.mfa_enabled) {
+    if (!user) {
       router.push("/login");
     }
-  }, [user, profile, router]);
+  }, [user, router]);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleVerify = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
+    setError("");
 
     try {
       // Call MFA verification endpoint
-      const { data, error: mfaError } = await supabase.functions.invoke("verify-mfa-code", {
+      const { data, error } = await supabase.functions.invoke("verify-mfa", {
         body: { code },
       });
 
-      if (mfaError) throw mfaError;
+      if (error) throw error;
 
       if (data?.verified) {
-        // MFA verified, redirect to dashboard
         router.push("/dashboard");
       } else {
-        setError("Invalid verification code. Please try again.");
+        setError("Invalid code. Please try again.");
+        setCode("");
       }
     } catch (err: any) {
-      setError(err.message || "Failed to verify code. Please try again.");
+      setError(err.message || "Verification failed. Please try again.");
+      setCode("");
     } finally {
       setLoading(false);
     }
@@ -54,13 +55,17 @@ export default function MFAChallengePagePage() {
     await signOut();
   };
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-full mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
               <Shield className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -80,62 +85,60 @@ export default function MFAChallengePagePage() {
           )}
 
           {/* MFA Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleVerify} className="space-y-6">
             <div>
               <label
                 htmlFor="code"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
-                Verification Code
+                Authentication Code
               </label>
               <input
                 id="code"
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                required
-                disabled={loading}
                 maxLength={6}
                 pattern="[0-9]{6}"
-                className="w-full px-4 py-3 text-center text-2xl font-mono tracking-widest border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                required
+                disabled={loading}
+                className="w-full px-4 py-3 text-center text-2xl tracking-widest border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed font-mono"
                 placeholder="000000"
-                autoComplete="one-time-code"
                 autoFocus
+                autoComplete="one-time-code"
               />
             </div>
 
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={loading}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                Cancel
-              </button>
+            <button
+              type="submit"
+              disabled={loading || code.length !== 6}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                "Verify Code"
+              )}
+            </button>
 
-              <button
-                type="submit"
-                disabled={loading || code.length !== 6}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Verifying...
-                  </>
-                ) : (
-                  "Verify"
-                )}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={loading}
+              className="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Cancel & Sign Out
+            </button>
           </form>
 
           {/* Footer */}
           <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>Can't access your authenticator app?</p>
-            <p className="mt-1">Contact your system administrator for help.</p>
+            <p>Lost access to your authenticator?</p>
+            <p className="mt-1">Contact your system administrator</p>
           </div>
         </div>
       </div>

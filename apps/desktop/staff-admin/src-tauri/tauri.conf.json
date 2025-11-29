@@ -59,9 +59,8 @@
   },
   "plugins": {
     "updater": {
-      "endpoints": [
-        "https://releases.ibimina.rw/staff-admin/{{target}}/{{arch}}/{{current_version}}"
-      ]
+      "endpoints": ["https://vacltfdslodqybxojytc.supabase.co/functions/v1/check-update"],
+      "pubkey": "YOUR_PUBLIC_KEY_HERE"
     }
   }
 }

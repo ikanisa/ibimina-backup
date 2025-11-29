@@ -92,11 +92,21 @@ export function OfflineQueueProvider({ children }: { children: React.ReactNode }
     window.addEventListener("online", onOnline);
     window.addEventListener("offline", onOffline);
 
+    // Listen for system tray sync request
+    let unlistenSync: (() => void) | undefined;
+    import("@tauri-apps/api/event").then(async ({ listen }) => {
+      unlistenSync = await listen("sync-requested", () => {
+        toast.info("Syncing...");
+        void processQueue();
+      });
+    });
+
     return () => {
       window.removeEventListener("online", onOnline);
       window.removeEventListener("offline", onOffline);
+      unlistenSync?.();
     };
-  }, []);
+  }, [processQueue, toast]);
 
   type PaymentStatus = Database["app"]["Tables"]["payments"]["Row"]["status"];
 

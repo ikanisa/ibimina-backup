@@ -5,6 +5,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase-client";
+import { deleteSecureCredentials } from "@/lib/tauri/commands";
 import type { User, Session } from "@supabase/supabase-js";
 
 interface Profile {
@@ -121,6 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    // Explicitly clear credentials from secure storage to ensure clean state
+    await deleteSecureCredentials();
     setUser(null);
     setProfile(null);
     setSession(null);

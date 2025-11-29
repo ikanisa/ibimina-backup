@@ -11,6 +11,7 @@
     "build": "vite build",
     "build:check": "tsc && vite build",
     "preview": "vite preview",
+    "analyze": "MODE=analyze vite build",
     "tauri": "tauri",
     "dev:tauri": "tauri dev",
     "build:tauri": "tauri build",
@@ -56,6 +57,7 @@
     "@vitejs/plugin-react": "^5.1.0",
     "autoprefixer": "^10.4.0",
     "postcss": "^8.4.0",
+    "rollup-plugin-visualizer": "^5.12.0",
     "tailwindcss": "^3.4.0",
     "typescript": "^5",
     "vite": "^6"
